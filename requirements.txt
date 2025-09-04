@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic
+Pillow
+pageextractor>=0.1.5
