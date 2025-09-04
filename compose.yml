@@ -1,11 +1,18 @@
 name: pageext-prod
 version: '3.8'
 
+volumes:
+  huggingface_cache:
+  torch_cache:
+
 services:
   app:
     build: .
     ports:
       - "8020:8000"
+    volumes:
+      - huggingface_cache:/root/.cache/huggingface
+      - torch_cache:/root/.cache/torch
     deploy:
       resources:
         reservations:
