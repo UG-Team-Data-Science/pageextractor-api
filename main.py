@@ -7,7 +7,7 @@ from typing import Optional, List
 from pydantic import BaseModel
 
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 
 from pageextractor import PageExtractor
 
@@ -22,30 +22,22 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-class ImageEditRequest(BaseModel):
-    image: str
-    prompt: str = "page."
-    response_format: str = "b64_json"
 
-class ImageEditResponse(BaseModel):
-    created: int
-    data: List[dict]
-
-@app.post("/v1/images/edits")
-async def edit_image(request: ImageEditRequest):
+@app.post("/v1/images/edits/")
+async def edit_image(image: UploadFile = File(...), prompt: str = Form("page."), response_format: str = Form("b64_json")):
     # Validate response_format
-    if request.response_format not in ["b64_json"]:
+    if response_format not in ["b64_json"]:
         raise HTTPException(status_code=400, detail="Invalid response_format, only b64_json is supported")
 
-    # Decode base64 image
+    # Read uploaded image
     try:
-        image_bytes = base64.b64decode(request.image)
+        image_bytes = await image.read()
     except Exception:
-        raise HTTPException(status_code=400, detail="Invalid base64 image data")
+        raise HTTPException(status_code=400, detail="Invalid image file")
 
     # Extract pages using pageextractor with preloaded model
     img = Image.open(io.BytesIO(image_bytes))
-    cropped = app.state.model.extract_page(img, prompt=request.prompt)[2]
+    cropped = app.state.model.extract_page(img, prompt=prompt)[2]
 
     # Convert cropped PIL Image to PNG bytes and base64
     cropped_bytes_io = io.BytesIO()
@@ -54,4 +46,4 @@ async def edit_image(request: ImageEditRequest):
     b64_data = base64.b64encode(cropped_bytes).decode()
 
     created = int(time.time())
-    return ImageEditResponse(created=created, data=[{"b64_json": b64_data}])
+    return {"created": created, "data": [{"b64_json": b64_data}]}
