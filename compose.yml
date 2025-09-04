@@ -1,0 +1,15 @@
+name: pageext-prod
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8020:8000"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0']
+              capabilities: ['gpu']
