@@ -6,7 +6,7 @@ volumes:
   torch_cache:
 
 services:
-  app:
+  pageextractor:
     build: .
     ports:
       - "8020:8000"

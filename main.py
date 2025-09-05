@@ -23,7 +23,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
-@app.post("/v1/images/edits/")
+@app.post("/v1/images/edits")
 async def edit_image(image: UploadFile = File(...), prompt: str = Form("page."), response_format: str = Form("b64_json")):
     # Validate response_format
     if response_format not in ["b64_json"]:
