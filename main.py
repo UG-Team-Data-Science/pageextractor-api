@@ -29,28 +29,30 @@ app = FastAPI(lifespan=lifespan)
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     content_type = request.headers.get('content-type', '')
-    logging.info(f"Request: {request.method} {request.url} Content-Type: {content_type}")
-    
+    user_agent = request.headers.get('user-agent', '')
+    logging.info(f"Request: {request.method} {request.url} Content-Type: {content_type} User-Agent: {user_agent}")
+
+    # Log all headers for debugging
+    headers_dict = dict(request.headers)
+    logging.info(f"Headers: {json.dumps(headers_dict, indent=2)}")
+
     body = await request.body()
-    
+
     if 'multipart/form-data' in content_type:
-        _, params = parse_header(content_type)
-        boundary = params.get('boundary')
-        if boundary:
-            parser = MultipartParser(boundary.encode(), body)
-            parts = parser.parse()
-            fields = []
-            for part in parts:
-                fields.append(part.name.decode() if isinstance(part.name, bytes) else part.name)
-            logging.info(f"Form fields: {fields}")
+        form = await request.form()
+        logging.info(f"Form fields: {list(form)}")
     elif 'application/json' in content_type:
         try:
             data = json.loads(body.decode())
             logging.info(f"JSON keys: {list(data.keys())}")
         except:
             pass
-    
+    else:
+        # Log body for other content types
+        logging.info(f"Body length: {len(body)} bytes")
+
     response = await call_next(request)
+    logging.info(f"Response status: {response.status_code}")
     return response
 
 @app.post("/v1/images/edits")
