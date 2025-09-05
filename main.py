@@ -66,7 +66,7 @@ async def log_requests(request: Request, call_next):
     return response
 
 @app.post("/v1/images/edits")
-async def edit_image(image: UploadFile = File(...), prompt: str = Form("page."), response_format: str = Form("b64_json")):
+async def edit_image(image: UploadFile|List[UploadFile] = File(...), prompt: str = Form("page."), response_format: str = Form("b64_json")):
     # Validate response_format
     if response_format not in ["b64_json"]:
         raise HTTPException(status_code=400, detail="Invalid response_format, only b64_json is supported")
