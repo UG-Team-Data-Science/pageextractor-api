@@ -15,6 +15,8 @@ from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Request
 
 from pageextractor import PageExtractor
 
+logging.basicConfig(level=logging.INFO)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Load the model at startup
