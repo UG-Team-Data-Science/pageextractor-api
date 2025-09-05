@@ -28,43 +28,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    content_type = request.headers.get('content-type', '')
-    user_agent = request.headers.get('user-agent', '')
-    logging.info(f"Request: {request.method} {request.url} Content-Type: {content_type} User-Agent: {user_agent}")
-
-    # Log all headers for debugging
-    headers_dict = dict(request.headers)
-    logging.info(f"Headers: {json.dumps(headers_dict, indent=2)}")
-
-    body = await request.body()
-
-    if 'multipart/form-data' in content_type:
-        form = await request.form()
-        logging.info(f"Form fields: {list(form)}")
-        for field in form:
-            logging.info(f"Form fields: {list(form)}")
-            values = form.getlist(field)
-            for i, value in enumerate(values):
-                if isinstance(value, UploadFile):
-                    print(f"{field}[{i}]={value.filename}[:15] {await value.read(15)}")
-                else:
-                    print(f"{field}[{i}]={value}")
-    elif 'application/json' in content_type:
-        try:
-            data = json.loads(body.decode())
-            logging.info(f"JSON keys: {list(data.keys())}")
-        except:
-            pass
-    else:
-        # Log body for other content types
-        logging.info(f"Body length: {len(body)} bytes")
-
-    response = await call_next(request)
-    logging.info(f"Response status: {response.status_code}")
-    return response
-
 @app.post("/v1/images/edits")
 async def edit_image(request: Request, prompt: str = Form("page."), response_format: str = Form("b64_json")):
     # Validate response_format
