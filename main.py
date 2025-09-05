@@ -38,8 +38,9 @@ async def log_requests(request: Request, call_next):
         boundary = params.get('boundary')
         if boundary:
             parser = MultipartParser(boundary.encode(), body)
+            parts = parser.parse()
             fields = []
-            for part in parser:
+            for part in parts:
                 fields.append(part.name.decode() if isinstance(part.name, bytes) else part.name)
             logging.info(f"Form fields: {fields}")
     elif 'application/json' in content_type:
