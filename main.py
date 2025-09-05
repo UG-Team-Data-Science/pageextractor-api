@@ -45,7 +45,7 @@ async def log_requests(request: Request, call_next):
         logging.info(f"Form fields: {list(form)}")
         for field in form:
             logging.info(f"Form fields: {list(form)}")
-            values = body.getlist(field)
+            values = form.getlist(field)
             for i, value in enumerate(values):
                 if isinstance(value, UploadFile):
                     print(f"{field}[{i}]={value.filename}[:15] {await value.read(15)}")
