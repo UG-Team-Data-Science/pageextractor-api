@@ -43,6 +43,14 @@ async def log_requests(request: Request, call_next):
     if 'multipart/form-data' in content_type:
         form = await request.form()
         logging.info(f"Form fields: {list(form)}")
+        for field in form:
+            logging.info(f"Form fields: {list(form)}")
+            values = body.getlist(field)
+            for i, value in enumerate(values):
+                if isinstance(value, UploadFile):
+                    print(f"{field}[{i}]={value.filename}[:15] {await value.read(15)}")
+                else:
+                    print(f"{field}[{i}]={value}")
     elif 'application/json' in content_type:
         try:
             data = json.loads(body.decode())
