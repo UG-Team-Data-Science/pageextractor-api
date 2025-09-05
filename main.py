@@ -1,13 +1,17 @@
 import time
 import base64
 import io
+import logging
+import json
 from PIL import Image
 from typing import Optional, List
+from cgi import parse_header
+from multipart import MultipartParser
 
 from pydantic import BaseModel
 
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Request
 
 from pageextractor import PageExtractor
 
@@ -22,6 +26,31 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    content_type = request.headers.get('content-type', '')
+    logging.info(f"Request: {request.method} {request.url} Content-Type: {content_type}")
+    
+    body = await request.body()
+    
+    if 'multipart/form-data' in content_type:
+        _, params = parse_header(content_type)
+        boundary = params.get('boundary')
+        if boundary:
+            parser = MultipartParser(boundary.encode(), body)
+            fields = []
+            for part in parser:
+                fields.append(part.name.decode() if isinstance(part.name, bytes) else part.name)
+            logging.info(f"Form fields: {fields}")
+    elif 'application/json' in content_type:
+        try:
+            data = json.loads(body.decode())
+            logging.info(f"JSON keys: {list(data.keys())}")
+        except:
+            pass
+    
+    response = await call_next(request)
+    return response
 
 @app.post("/v1/images/edits")
 async def edit_image(image: UploadFile = File(...), prompt: str = Form("page."), response_format: str = Form("b64_json")):
