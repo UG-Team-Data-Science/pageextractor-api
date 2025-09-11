@@ -3,4 +3,4 @@ uvicorn[standard]
 python-multipart
 pydantic
 Pillow
-pageextractor>=0.1.5
+pageextractor>=0.1.6

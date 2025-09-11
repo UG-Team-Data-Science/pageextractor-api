@@ -16,6 +16,7 @@ async def check_idle(app: FastAPI):
         await asyncio.sleep(30)  # Check every 30 seconds
         if app.state.last_used and time.time() - app.state.last_used > 120:  # 2 minutes
             if app.state.model:
+                app.state.model.unload() # unload from GPU first
                 app.state.model = None
                 gc.collect()
                 logging.info("Model unloaded due to idle")
