@@ -13,8 +13,8 @@ from pageextractor import PageExtractor
 
 async def check_idle(app: FastAPI):
     while True:
-        await asyncio.sleep(30)  # Check every 30 seconds
-        if app.state.last_used and time.time() - app.state.last_used > 120:  # 2 minutes
+        await asyncio.sleep(10)  # Check every 10 seconds
+        if app.state.last_used and time.time() - app.state.last_used > 30:
             if app.state.model:
                 app.state.model.unload() # unload from GPU first
                 app.state.model = None
