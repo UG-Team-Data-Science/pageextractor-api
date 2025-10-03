@@ -64,14 +64,17 @@ async def edit_image(request: Request, prompt: str = Form("page."), response_for
 
         # Extract pages using pageextractor with preloaded model
         img = Image.open(io.BytesIO(image_bytes))
-        cropped = app.state.model.extract_page(img, prompt=prompt)[2]
+        mask, fourcorner, polygon, background_white, cropped, page_corrections = app.state.model.extract_page(img, prompt=prompt)
+        extracted = [mask, background_white, cropped, page_corrections]
+        image_types = ['mask', 'background_white', 'cropped', 'page_corrections']
 
-        # Convert cropped PIL Image to PNG bytes and base64
-        cropped_bytes_io = io.BytesIO()
-        cropped.save(cropped_bytes_io, format='PNG')
-        cropped_bytes = cropped_bytes_io.getvalue()
-        b64_data = base64.b64encode(cropped_bytes).decode()
-        results.append({"b64_json": b64_data})
+        for image_type, pil_image in zip(image_type, extracted):
+            # Convert PIL Image to PNG bytes and base64
+            bytes_io = io.BytesIO()
+            pil_image.save(bytes_io, format='PNG')
+            image_bytes = bytes_io.getvalue()
+            b64_data = base64.b64encode(image_bytes).decode()
+            results.append({"b64_json": b64_data, "title": image_type})
 
     created = int(time.time())
     return {"created": created, "data": results}
