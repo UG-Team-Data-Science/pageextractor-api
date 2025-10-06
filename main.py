@@ -5,6 +5,7 @@ import base64
 import io
 import logging
 from PIL import Image
+import numpy as np
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Form, Request
@@ -68,7 +69,8 @@ async def edit_image(request: Request, prompt: str = Form("page."), response_for
         extracted = [mask, background_white, cropped, page_corrections]
         image_types = ['mask', 'background_white', 'cropped', 'page_corrections']
 
-        for image_type, pil_image in zip(image_types, extracted):
+        for image_type, image in zip(image_types, extracted):
+            pil_image = Image.fromarray((image*255).astype(np.uint8))
             # Convert PIL Image to PNG bytes and base64
             bytes_io = io.BytesIO()
             pil_image.save(bytes_io, format='PNG')
