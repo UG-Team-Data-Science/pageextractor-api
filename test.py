@@ -18,6 +18,7 @@ result = client.images.edit(
     prompt='page.',
 )
 
+
 # Save the first returned image to disk
 b64 = result.data[0].b64_json
 img_bytes = base64.b64decode(b64)
