@@ -1,6 +1,4 @@
 name: pageext-prod
-version: '3.8'
-
 volumes:
   huggingface_cache:
   torch_cache:
