@@ -10,7 +10,8 @@ RUN mkdir -p /app
 WORKDIR /app
 COPY requirements.txt .
 RUN uv venv /app/venv
-RUN uv pip install -r requirements.txt
+RUN uv pip install --no-cache -r requirements.txt
+RUN rm -rf /root/.cache /tmp/* /var/tmp/* /var/lib/apt/lists/*
 COPY main.py .
 EXPOSE 8000
 
